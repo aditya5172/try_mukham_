@@ -1,0 +1,206 @@
+  import random
+from google.api_core.datetime_helpers import DatetimeWithNanoseconds
+import firebase_admin
+from firebase_admin import firestore
+from firebase_admin import credentials
+import pandas as pd
+import numpy as np
+import datetime
+import calendar
+import string
+from pyasn1.compat.octets import null
+#mukham_core_firebase_serviceAccountKey
+cred = credentials.Certificate("C:\\Users\\adity\\OneDrive\\Documents\\FireStore\\mukham_core_firebase_serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+cd = firestore.client()
+
+name=['Aakav','Aakesh','Aarav','Advik','Chaitanya','Chandran', 'Darsh', 'Darpan', 'Ekansh', 'Evak', 'Girik','Yagnesh',
+ 'Hredhaan', 'Hemang', 'Inesh', 'Ishaan', 'Jairaj','Jihan', 'Lekh', 'Lohit', 'Manbir', 'Mayan','Yash', 'Yatin',
+ 'Meet', 'Nishit', 'Nihal', 'Onkar', 'Onveer', 'Oviyan','Parijat','Pranjal', 'Pranit', 'Rayaan','Ronit', 'Reyansh',
+ 'Samaksh', 'Samesh','Sanket','Sanat', 'Tuhin','Tejas','Trijal', 'Umang', 'Udarsh', 'Viraj','Vaidik','Vedant',	'Yug' ]
+
+surname=['Kumar','Lal','Sharma','Shan','Jai','Pal','Aggarwal','Raje','Chande','Chander','Nara','Rai',
+'Nath','Goel','Bhat','Raji','Anand','Suri','Kapoor','Chandra','Patel','Verma','Malhotra','Sai',
+'Engineer','Arun','Madan','Srini','Prasad','Sara','Rana','Raman','Subram','Mehta','Subramani',
+'Sethi','Vijaya','Malik','Narayan','Mittal','Nita','Kishore','Roy','Chaudhary','Charan',
+'Nigam','Sen','Subramanian','Nirmal','Pawan']
+
+ey=['21','20','19','18']
+sst=['D','E','I','N']
+en=[]
+eid=[]
+for i in range(0,10):
+    en.append(str(i))
+for i in range(0,50):
+    eid.append(random.choice(ey)+"BC"+random.choice(sst)+"7"+random.choice(en)+random.choice(en)+random.choice(en))
+a=[]
+for i in string.ascii_lowercase:
+    a.append(i)
+for i in string.ascii_uppercase:
+    a.append(i)
+for i in range(0,10):
+    a.append(str(i))
+
+b=[]
+for j in range(50):
+    x=np.random.choice(a, size=28,replace=True)
+    st=""
+    for i in x:
+        st=st+i
+    b.append(st)
+
+school=['SCOPE','SENSE','VSL','VISH','OTHERS']
+
+def randomDate(start, end):
+    frmt = '%d-%m-%Y %H:%M:%S'
+
+    stime = datetime.datetime.strptime(start, frmt)
+    etime = datetime.datetime.strptime(end, frmt)
+
+    ptime = stime + random.random() * (etime - stime)
+
+    return ptime
+
+def numberOfDays( y, m):
+    leap = 0
+    if y% 400 == 0:
+     leap = 1
+    elif y % 100 == 0:
+     leap = 0
+    elif y% 4 == 0:
+     leap = 1
+    if m==2:
+     return 28 + leap
+    list = [1,3,5,7,8,10,12]
+    if m in list:
+     return 31
+    return 30
+
+def user(id,ii,ed):
+    mid=name[ii]+surname[ii]+"@vitap.ac.in"
+    ec=2
+    et="00:00 10:59 11:00 23:59"
+    fid="Empty"
+    fn=name[ii]+" "+surname[ii]
+    s=random.choice(school)
+    data={'EmpId':ed,'email':mid,'entryCount':ec,'entrytiming':et,'faceId':fid,'fullName':fn,'school':s}
+    cd.collection("Users").document(id).set(data, merge=True)
+
+def detail(id):
+    dy=[]
+    sc=cd.collection("Users").document(id).get().to_dict()['school']
+    for i in range(np.random.randint(1,15),32):
+        dy.append(i)
+    yr=["2021"]
+    mni=["12"]
+    mns=["December"]
+    for k in yr:
+        for jj in range(0,len(mni)):
+            for i in dy:
+                if numberOfDays(int(k),int(mni[jj]))<i:
+                    break
+                else:
+                    if i<10:
+                        de="0"+str(i)+"-"+str(mni[jj])+"-"+str(k)
+                    else:
+                        de=str(i)+"-"+str(mni[jj])+"-"+str(k)
+
+                    d=[]
+                    for ii in range(2):
+                        xy=np.random.choice(a=[False, True],p=[0.65,0.35])
+                        d.append(xy)
+                    dd=[]
+                    g=0
+                    for ii in range(2):
+                        if d[ii]==True:
+                            g=g+1
+                            if ii==0:
+                                sa=de+" 1:30:00"
+                                ea=de+" 6:15:00"
+                                daa1=randomDate(sa,ea)
+                                daa2=DatetimeWithNanoseconds(daa1.year,daa1.month,daa1.day,daa1.hour,daa1.minute,daa1.second,daa1.microsecond)
+                                dd.append(daa2)
+                            if ii==1:
+                                sa=de+" 9:00:00"
+                                ea=de+" 12:15:00"
+                                daa1=randomDate(sa,ea)
+                                daa2=DatetimeWithNanoseconds(daa1.year,daa1.month,daa1.day,daa1.hour,daa1.minute,daa1.second,daa1.microsecond)
+                                dd.append(daa2)
+                        else:
+                            dd.append(False)
+                    if g>0:
+                        dic={de:dd}
+                        cd.collection("DeleteCollection").document(id).collection("Years").document(k).collection("Months").document(mns[jj]).collection("Days").document(de).set(dic)
+                        cd.collection("DeleteCollection").document(id).set({'uid':id,'school':sc}, merge=True)
+                        cd.collection("DeleteCollection").document(id).collection("Years").document(k).set({'uid':id,'school':sc}, merge=True)
+                        cd.collection("DeleteCollection").document(id).collection("Years").document(k).collection("Months").document(mns[jj]).set({'uid':id,'school':sc}, merge=True)
+
+
+
+def detail2(id):
+    dy=[]
+    sc=cd.collection("Users").document(id).get().to_dict()['school']
+    now=datetime.datetime.now()
+    for i in range(1,32):
+        dy.append(i)
+    yr=["2022"]
+    mni=["1","2","3","4","5","6","7","8","9","10","11","12"]
+    mns=["January","February","March","April","May","June","July","Augest","September","October","November","December"]
+    for k in yr:
+        for jj in range(0,1):
+            day=np.random.randint(9,25)
+            for i in dy :
+                if int(mni[jj])==1:
+                    if i>=day:
+                        break
+                    else:
+                        if numberOfDays(int(k),int(mni[jj]))<i:
+                            break
+                        else:
+                            if i<10:
+                                de="0"+str(i)+"-"+str(mni[jj])+"-"+str(k)
+                            else:
+                                de=str(i)+"-"+str(mni[jj])+"-"+str(k)
+                else:
+                    if numberOfDays(int(k),int(mni[jj]))<i:
+                            break
+                    else:
+                        if i<10:
+                            de="0"+str(i)+"-"+str(mni[jj])+"-"+str(k)
+                        else:
+                            de=str(i)+"-"+str(mni[jj])+"-"+str(k)
+
+                d=[]
+                for ii in range(2):
+                    xy=np.random.choice(a=[False, True],p=[0.65,0.35])
+                    d.append(xy)
+                dd=[]
+                g=0
+                for ii in range(2):
+                    if d[ii]==True:
+                        g=g+1
+                        if ii==0:
+                            sa=de+" 1:30:00"
+                            ea=de+" 6:15:00"
+                            daa1=randomDate(sa,ea)
+                            daa2=DatetimeWithNanoseconds(daa1.year,daa1.month,daa1.day,daa1.hour,daa1.minute,daa1.second,daa1.microsecond)
+                            dd.append(daa2)
+                        if ii==1:
+                            sa=de+" 9:00:00"
+                            ea=de+" 12:15:00"
+                            daa1=randomDate(sa,ea)
+                            daa2=DatetimeWithNanoseconds(daa1.year,daa1.month,daa1.day,daa1.hour,daa1.minute,daa1.second,daa1.microsecond)
+                            dd.append(daa2)
+                    else:
+                        dd.append(False)
+                if g>0:
+                    dic={de:dd}
+                    cd.collection("DeleteCollection").document(id).collection("Years").document(k).collection("Months").document(mns[jj]).collection("Days").document(de).set(dic)
+                    cd.collection("DeleteCollection").document(id).set({'uid':id,'school':sc}, merge=True)
+                    cd.collection("DeleteCollection").document(id).collection("Years").document(k).set({'uid':id,'school':sc}, merge=True)
+                    cd.collection("DeleteCollection").document(id).collection("Years").document(k).collection("Months").document(mns[jj]).set({'uid':id,'school':sc}, merge=True)
+bb=["1MvrVzOdacP4hy00jSCBy4UwGFSM","ewtTMKbnaKoeW1mK2SZjFXdrlSKS","lEKfMKsqvVeN9yfN9yOIRo5JPF2G","lULI9qkTDIyW7PYQV61u8Fle2zMU"]
+for i in range(0,len(bb)):
+    #user(b[i],i,eid[i])
+    detail(bb[i])
+    detail2(bb[i])
