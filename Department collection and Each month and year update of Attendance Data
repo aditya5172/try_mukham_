@@ -7,51 +7,55 @@ import datetime
 import calendar
 from pyasn1.compat.octets import null
 
-cred = credentials.Certificate("C:\\Users\\adity\\OneDrive\\Documents\\FireStore\\mukham_core_firebase_serviceAccountKey.json")
+# mukham_core_firebase_serviceAccountKey
+cred = credentials.Certificate("C:\\Users\\adity\\OneDrive\\Documents\\FireStore\\test2_try1.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-
 docs2 = db.collection("Users").stream()
+
+
 def per(df4):
-    p=0
-    to=0
-    for i in range(0,len(df4)):
-        if df4['First Shift'][i]!=False:
-            p=p+1
+    p = 0
+    to = 0
+    for i in range(0, len(df4)):
+        if df4['First Shift'][i] != False:
+            p = p + 1
 
-            #print(i)
-        if df4['Second Shift'][i]!=False:
-            p=p+1
+            # print(i)
+        if df4['Second Shift'][i] != False:
+            p = p + 1
 
-            #print(i)
-        to=to+2
-    return p,to
+            # print(i)
+        to = to + 2
+    return p, to
 
-def numberOfDays( y, m):
+
+def numberOfDays(y, m):
     leap = 0
-    if y% 400 == 0:
-     leap = 1
+    if y % 400 == 0:
+        leap = 1
     elif y % 100 == 0:
-     leap = 0
-    elif y% 4 == 0:
-     leap = 1
-    if m==2:
-     return 28 + leap
-    list = [1,3,5,7,8,10,12]
+        leap = 0
+    elif y % 4 == 0:
+        leap = 1
+    if m == 2:
+        return 28 + leap
+    list = [1, 3, 5, 7, 8, 10, 12]
     if m in list:
-     return 31
+        return 31
     return 30
 
+
 def ind1(a):
-    data={
-        'Name':[],
-        'Date':[],
-        'School':[],
-        'First Shift':[],
-        'Time for First Shift':[],
-        'Second Shift':[],
-        'Time for Second Shift':[]
+    data = {
+        'Name': [],
+        'Date': [],
+        'School': [],
+        'First Shift': [],
+        'Time for First Shift': [],
+        'Second Shift': [],
+        'Time for Second Shift': []
     }
     mon = np.arange(1, 13)
     mn = []
@@ -61,45 +65,44 @@ def ind1(a):
     yr = ["2021", "2022"]
     for ij in yr:
         for k in mn:
-            doc = db.collection("AttendanceData").document(a).collection("Years").document(ij).collection("Months").document(k).collection("Days").get()
-            q=0
+            doc = db.collection("AttendanceData").document(a).collection("Years").document(ij).collection(
+                "Months").document(k).collection("Days").get()
+            q = 0
             for m in doc:
-                if m.id!=null:
-                    q=q+1
+                if m.id != null:
+                    q = q + 1
 
-            if q>0:
+            if q > 0:
                 for m in doc:
-                    d=m.id
-                    dd=datetime.datetime.strptime(d,"%d-%m-%Y")
+                    d = m.id
+                    dd = datetime.datetime.strptime(d, "%d-%m-%Y")
 
-                    g=db.collection('Users').document(a).get()
+                    g = db.collection('Users').document(a).get()
                     data['Name'].append(g.to_dict()['fullName'])
-                    xname=g.to_dict()['fullName']
+                    xname = g.to_dict()['fullName']
                     data['School'].append(g.to_dict()['school'])
-                    xschool=g.to_dict()['school']
-                    store=dd
-                    e=m.to_dict()
+                    xschool = g.to_dict()['school']
+                    store = dd
+                    e = m.to_dict()
                     data['Date'].append(dd)
-                    for i in range(0,2):
-                        f=e[d][i]
-                        if type(f)==bool:
-                            if i==0:
+                    for i in range(0, 2):
+                        f = e[d][i]
+                        if type(f) == bool:
+                            if i == 0:
                                 data['First Shift'].append(False)
                                 data['Time for First Shift'].append(np.nan)
-                            elif i==1:
+                            elif i == 1:
                                 data['Second Shift'].append(False)
                                 data['Time for Second Shift'].append(np.nan)
                         else:
-                            if i==0:
+                            if i == 0:
                                 data['First Shift'].append(True)
                                 data['Time for First Shift'].append(f.time().strftime("%H:%M:%S"))
-                            elif i==1:
+                            elif i == 1:
                                 data['Second Shift'].append(True)
                                 data['Time for Second Shift'].append(f.time().strftime("%H:%M:%S"))
 
-
-
-    #print(data)
+    # print(data)
     data['Name'].append(xname)
     data['School'].append(xschool)
     data['Date'].append(datetime.datetime.now())
@@ -108,38 +111,38 @@ def ind1(a):
     data['First Shift'].append(False)
     data['Time for First Shift'].append(np.nan)
 
-    df=pd.DataFrame(data)
+    df = pd.DataFrame(data)
     return df
 
-def us1(idf):
-    j=0
 
-    inp=idf
+def us1(idf):
+    j = 0
+
+    inp = idf
     for iii in docs2:
         j = j + 1
         if iii.id == inp:
             doc = db.collection("AttendanceData").document(iii.id).id
-            df2=ind1(doc)
+            df2 = ind1(doc)
             break
 
-    da={
-        'Name':[],
-        'Date':[],
-        'School':[],
-        'First Shift':[],
-        'Time for First Shift':[],
-        'Second Shift':[],
-        'Time for Second Shift':[]
+    da = {
+        'Name': [],
+        'Date': [],
+        'School': [],
+        'First Shift': [],
+        'Time for First Shift': [],
+        'Second Shift': [],
+        'Time for Second Shift': []
     }
 
+    m = 0
+    jj = 0
 
-    m=0
-    jj=0
-
-    for i in range(0,len(df2)-1):
-        jj=1
-        if df2['Date'][i+1].month!=df2['Date'][i].month:
-            ld=numberOfDays(df2['Date'][i].year,df2['Date'][i].month)
+    for i in range(0, len(df2) - 1):
+        jj = 1
+        if df2['Date'][i + 1].month != df2['Date'][i].month:
+            ld = numberOfDays(df2['Date'][i].year, df2['Date'][i].month)
             da['Name'].append(df2['Name'][i])
             da['Date'].append(df2['Date'][i])
             da['First Shift'].append(df2['First Shift'][i])
@@ -147,9 +150,9 @@ def us1(idf):
             da['Time for First Shift'].append(df2['Time for First Shift'][i])
             da['Second Shift'].append(df2['Second Shift'][i])
             da['Time for Second Shift'].append(df2['Time for Second Shift'][i])
-            #print(df2['Date'][i].day+1,ld+1)
-            for j in range(df2['Date'][i].day+1,ld+1):
-                dd=datetime.date(df2['Date'][i].year,df2['Date'][i].month,j)
+            # print(df2['Date'][i].day+1,ld+1)
+            for j in range(df2['Date'][i].day + 1, ld + 1):
+                dd = datetime.date(df2['Date'][i].year, df2['Date'][i].month, j)
 
                 da['Date'].append(dd)
                 da['Name'].append(df2['Name'][i])
@@ -158,8 +161,8 @@ def us1(idf):
                 da['Time for First Shift'].append(np.nan)
                 da['Second Shift'].append(False)
                 da['Time for Second Shift'].append(np.nan)
-            for j in range(1,df2['Date'][i+1].day):
-                dd=datetime.date(df2['Date'][i+1].year,df2['Date'][i+1].month,j)
+            for j in range(1, df2['Date'][i + 1].day):
+                dd = datetime.date(df2['Date'][i + 1].year, df2['Date'][i + 1].month, j)
 
                 da['Date'].append(dd)
                 da['Name'].append(df2['Name'][i])
@@ -170,11 +173,11 @@ def us1(idf):
                 da['Time for Second Shift'].append(np.nan)
 
         else:
-            #print(df2['Date'][i+1].day-df2['Date'][i].day)
+            # print(df2['Date'][i+1].day-df2['Date'][i].day)
 
-            if (df2['Date'][i+1].day-df2['Date'][i].day)>1:
-                da2=df2['Date'][i+1].day
-                da1=df2['Date'][i].day
+            if (df2['Date'][i + 1].day - df2['Date'][i].day) > 1:
+                da2 = df2['Date'][i + 1].day
+                da1 = df2['Date'][i].day
                 da['Date'].append(df2['Date'][i])
                 da['School'].append(df2['School'][i])
                 da['Name'].append(df2['Name'][i])
@@ -182,11 +185,11 @@ def us1(idf):
                 da['Time for First Shift'].append(df2['Time for First Shift'][i])
                 da['Second Shift'].append(df2['Second Shift'][i])
                 da['Time for Second Shift'].append(df2['Time for Second Shift'][i])
-                #print(m,"yes")
-                m=m+1
-                for j in range(da1+1,da2):
-                    dd=datetime.date(df2['Date'][i].year,df2['Date'][i].month,j)
-                    #print(dd)
+                # print(m,"yes")
+                m = m + 1
+                for j in range(da1 + 1, da2):
+                    dd = datetime.date(df2['Date'][i].year, df2['Date'][i].month, j)
+                    # print(dd)
                     da['Date'].append(dd)
                     da['Name'].append(df2['Name'][i])
                     da['First Shift'].append(False)
@@ -202,108 +205,161 @@ def us1(idf):
                 da['Time for First Shift'].append(df2['Time for First Shift'][i])
                 da['Second Shift'].append(df2['Second Shift'][i])
                 da['Time for Second Shift'].append(df2['Time for Second Shift'][i])
-    df3=pd.DataFrame(da)
+    df3 = pd.DataFrame(da)
 
-    if jj==1:
+    if jj == 1:
 
-        da['Date'].append(df2['Date'][i+1])
-        da['Name'].append(df2['Name'][i+1])
-        da['First Shift'].append(df2['First Shift'][i+1])
-        da['School'].append(df2['School'][i+1])
-        da['Time for First Shift'].append(df2['Time for First Shift'][i+1])
-        da['Second Shift'].append(df2['Second Shift'][i+1])
-        da['Time for Second Shift'].append(df2['Time for Second Shift'][i+1])
-        ax=da.copy()
+        da['Date'].append(df2['Date'][i + 1])
+        da['Name'].append(df2['Name'][i + 1])
+        da['First Shift'].append(df2['First Shift'][i + 1])
+        da['School'].append(df2['School'][i + 1])
+        da['Time for First Shift'].append(df2['Time for First Shift'][i + 1])
+        da['Second Shift'].append(df2['Second Shift'][i + 1])
+        da['Time for Second Shift'].append(df2['Time for Second Shift'][i + 1])
+        ax = da.copy()
         ax.pop('Time for Second Shift')
         ax.pop('Time for First Shift')
-        df3=pd.DataFrame(da)
+        df3 = pd.DataFrame(da)
 
-        #print(dx)
+        # print(dx)
 
-        def deal(mns,mni,idf,yr,df3):
-            p=0
-            ab=0
-            for i in range(0,len(df3['Date'])):
-                da=df3['Date'][i]
-                if da.year==yr:
-                    if da.month==mni:
-                        if df3['First Shift'][i]==True:
-                            p=p+1
+        def deal(mns, mni, idf, yr, df3):
+            p = 0
+            fsp = int(0)
+            fsa = int(0)
+            ssp = int(0)
+            ssa = int(0)
+            bsp = int(0)
+            bsa = int(0)
+            ab = int(0)
+            for i in range(0, len(df3['Date'])):
+                da = df3['Date'][i]
+                if da.year == yr:
+                    if da.month == mni:
+                        if df3['First Shift'][i] == True:
+                            p = p + 1
                         else:
-                            ab=ab+1
-                        if df3['Second Shift'][i]==True:
-                            p=p+1
+                            ab = ab + 1
+                        if df3['Second Shift'][i] == True:
+                            p = p + 1
                         else:
-                            ab=ab+1
-            if (p+ab)!=0:
-                x=datetime.datetime.now()
-                x=x.date()
-                dic={"Present":p,"Absent":ab,"Total":(p+ab),"Last_Updated_Date":datetime.datetime.strftime(x,"%Y-%m-%d")}
-                db.collection("AttendanceData").document(idf).collection("Years").document(str(yr)).collection("Months").document(mns).update(dic)
-            return p,ab
-        mni=['1','2','3','4','5','6','7','8','9','10','11','12']
-        yr=['2021','2022']
-        mns=["January","February","March","April","May","June","July","Augest","September","October","November","December"]
+                            ab = ab + 1
+
+                        if df3['First Shift'][i] == True and df3['Second Shift'][i] == True:
+                            bsp = bsp + 1
+                        elif df3['First Shift'][i] == True and df3['Second Shift'][i] == False:
+                            fsp = fsp + 1
+                            ssa = ssa + 1
+                        elif df3['First Shift'][i] == False and df3['Second Shift'][i] == True:
+                            fsa = fsa + 1
+                            ssp = ssp + 1
+                        elif df3['First Shift'][i] == False and df3['Second Shift'][i] == False:
+                            bsa = bsa + 1
+            if (p + ab) != 0:
+                x = datetime.datetime.now()
+                x = x.date()
+                dic = {"Present": p, "Absent": ab, "Total": (p + ab),
+                       "Last_Updated_Date": datetime.datetime.strftime(x, "%Y-%m-%d"), "Present Both Shifts": bsp,
+                       "Present First Shift only": fsp, "Present Second Shift Only": ssp}
+                # ,"Absent Both Shift":int(bsa),"Absent First Shift Only":fsa,"Absent Second Shift Only":ssa}
+
+                # print(dic2)
+                db.collection("AttendanceData").document(idf).collection("Years").document(str(j)).collection(
+                    "Months").document(mns).update({"Present": p, "Absent": ab, "Total": (p + ab),
+                                                    "Last_Updated_Date": datetime.datetime.strftime(x, "%Y-%m-%d"),
+                                                    db.field_path("Present Both Shifts"): bsp,
+                                                    db.field_path("Present First Shift only"): fsp,
+                                                    db.field_path("Present Second Shift Only"): ssp,
+                                                    db.field_path("Absent Both Shift"): int(bsa),
+                                                    db.field_path("Absent First Shift Only"): fsa,
+                                                    db.field_path("Absent Second Shift Only"): ssa})
+                # db.collection("AttendanceData").document(idf).collection("Years").document(str(yr)).collection("Months").document(mns).update(dic2)
+                # db.collection("AttendanceData").document(idf).collection("Years").document(str(yr)).collection("Months").document(mns).update(dic3)
+
+            return p, ab, bsp, fsp, ssp, bsa, fsa, ssa
+
+        mni = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        yr = ['2021', '2022']
+        mns = ["January", "February", "March", "April", "May", "June", "July", "Augest", "September", "October",
+               "November", "December"]
         for j in yr:
-            pp=0
-            aab=0
-            for i in range(0,len(mns)):
-                p,ab=deal(mns[i],int(mni[i]),idf,int(j),df3)
-                pp=pp+p
-                aab=aab+ab
-            x=datetime.datetime.now()
-            x=x.date()
-            dic={"Present":p,"Absent":ab,"Total":(p+ab),"Last_Updated_Time":datetime.datetime.strftime(x,"%Y-%m-%d")}
-            db.collection("AttendanceData").document(idf).collection("Years").document(j).update(dic)
+            pp = 0
+            aab = 0
+            ffsp = int(0)
+            ffsa = int(0)
+            sssp = int(0)
+            sssa = int(0)
+            bbsp = int(0)
+            bbsa = int(0)
+            for i in range(0, len(mns)):
+                p, ab, bsp, fsp, ssp, bsa, fsa, ssa = deal(mns[i], int(mni[i]), idf, int(j), df3)
+                pp = pp + p
+                aab = aab + ab
+                bbsp = bbsp + bsp
+                ffsp = ffsp + fsp
+                sssp = sssp + ssp
+                bbsa = bbsa + bsa
+                ffsa = ffsa + fsa
+                sssa = sssa + ssa
+            x = datetime.datetime.now()
+            x = x.date()
 
-
-
-        p,to=per(df3)
-        #print(p,ab)
-        ddf={'Present':p,'Absent':(to-p),'Total':to}
+            db.collection("AttendanceData").document(idf).collection("Years").document(str(j)).\
+                update({"Present": pp, "Absent": aab, "Total": (pp + aab),
+                                                "Last_Updated_Date": datetime.datetime.strftime(x, "%Y-%m-%d"),
+                                                db.field_path("Present Both Shifts"): bbsp,
+                                                db.field_path("Present First Shift only"): ffsp,
+                                                db.field_path("Present Second Shift Only"): sssp,
+                                                db.field_path("Absent Both Shift"): bbsa,
+                                                db.field_path("Absent First Shift Only"): ffsa,
+                                                db.field_path("Absent Second Shift Only"): sssa})
+        p, to = per(df3)
+        # print(p,ab)
+        ddf = {'Present': p, 'Absent': (to - p), 'Total': to}
         db.collection("AttendanceData").document(idf).update(ddf)
-        #print(ddf)
+        # print(ddf)
 
         for i in range(len(ax['Date'])):
-            abx=ax['Date'][i]
-            ax['Date'][i]=datetime.datetime.strftime(abx,"%Y-%m-%d")
-            #print(i)
+            abx = ax['Date'][i]
+            ax['Date'][i] = datetime.datetime.strftime(abx, "%Y-%m-%d")
+            # print(i)
         return da
 
 
-#print(doc.to_dict())
-docs=db.collection('AttendanceData').get()
-j=0
-ap={}
-bb=[]
+# print(doc.to_dict())
+docs = db.collection('AttendanceData').get()
+j = 0
+ap = {}
+bb = []
 for i in docs:
     bb.append(i.id)
-xy=us1(bb[0])
-p=pd.DataFrame(xy)
+xy = us1(bb[0])
+p = pd.DataFrame(xy)
 
-for i in range(1,len(bb)):
-    j=j+1
-    #if j==2:
-    xy=us1(bb[i])
-    xy=pd.DataFrame(xy)
+for i in range(1, len(bb)):
+    j = j + 1
+    # if j==2:
+    xy = us1(bb[i])
+    xy = pd.DataFrame(xy)
 
-    frame=[p,xy]
-    p=pd.concat(frame)
+    frame = [p, xy]
+    p = pd.concat(frame)
 
-p=p.reset_index(drop=True)
-#print(p.to_string())
+p = p.reset_index(drop=True)
 
+
+# print(p.to_string())
 
 
 def ind2(a):
-    data={
-        'Name':[],
-        'Date':[],
-        'School':[],
-        'First Shift':[],
-        'Time for First Shift':[],
-        'Second Shift':[],
-        'Time for Second Shift':[]
+    data = {
+        'Name': [],
+        'Date': [],
+        'School': [],
+        'First Shift': [],
+        'Time for First Shift': [],
+        'Second Shift': [],
+        'Time for Second Shift': []
     }
     mon = np.arange(1, 13)
     mn = []
@@ -313,42 +369,45 @@ def ind2(a):
     yr = ["2021", "2022"]
     for ij in yr:
         for k in mn:
-            doc = db.collection("DeleteCollection").document(a).collection("Years").document(ij).collection("Months").document(k).collection("Days").get()
-            q=0
+            doc = db.collection("DeleteCollection").document(a).collection("Years").document(ij).collection(
+                "Months").document(k).collection("Days").get()
+            q = 0
             for m in doc:
-                if m.id!=null:
-                    q=q+1
+                if m.id != null:
+                    q = q + 1
 
-            if q>0:
+            if q > 0:
                 for m in doc:
-                    d=m.id
-                    dd=datetime.datetime.strptime(d,"%d-%m-%Y")
+                    d = m.id
+                    dd = datetime.datetime.strptime(d, "%d-%m-%Y")
 
-                    g=db.collection('Users').document(a).get()
+                    g = db.collection('Users').document(a).get()
                     data['Name'].append(g.to_dict()['fullName'])
                     data['School'].append(g.to_dict()['school'])
 
-                    e=m.to_dict()
+                    e = m.to_dict()
                     data['Date'].append(dd)
-                    for i in range(0,2):
-                        f=e[d][i]
-                        if type(f)==bool:
-                            if i==0:
+                    for i in range(0, 2):
+                        f = e[d][i]
+                        if type(f) == bool:
+                            if i == 0:
                                 data['First Shift'].append(False)
                                 data['Time for First Shift'].append(np.nan)
-                            elif i==1:
+                            elif i == 1:
                                 data['Second Shift'].append(False)
                                 data['Time for Second Shift'].append(np.nan)
                         else:
-                            if i==0:
+                            if i == 0:
                                 data['First Shift'].append(True)
                                 data['Time for First Shift'].append(f.time().strftime("%H:%M:%S"))
-                            elif i==1:
+                            elif i == 1:
                                 data['Second Shift'].append(True)
                                 data['Time for Second Shift'].append(f.time().strftime("%H:%M:%S"))
-    #print(data)
-    df=pd.DataFrame(data)
+    # print(data)
+    df = pd.DataFrame(data)
     return df
+
+
 '''dx={
     'Name':[],
         'Date':[],
@@ -360,35 +419,35 @@ def ind2(a):
 
 }'''
 docs2 = db.collection("Users").stream()
-def us2(idf):
-    j=0
 
-    inp=idf
+
+def us2(idf):
+    j = 0
+
+    inp = idf
     for iii in docs2:
         j = j + 1
         if iii.id == inp:
-
-            df2=ind2(inp)
+            df2 = ind2(inp)
             break
 
-    da={
-        'Name':[],
-        'Date':[],
-        'School':[],
-        'First Shift':[],
-        'Time for First Shift':[],
-        'Second Shift':[],
-        'Time for Second Shift':[]
+    da = {
+        'Name': [],
+        'Date': [],
+        'School': [],
+        'First Shift': [],
+        'Time for First Shift': [],
+        'Second Shift': [],
+        'Time for Second Shift': []
     }
 
+    m = 0
+    jj = 0
 
-    m=0
-    jj=0
-
-    for i in range(0,len(df2)-1):
-        jj=1
-        if df2['Date'][i+1].month!=df2['Date'][i].month:
-            ld=numberOfDays(df2['Date'][i].year,df2['Date'][i].month)
+    for i in range(0, len(df2) - 1):
+        jj = 1
+        if df2['Date'][i + 1].month != df2['Date'][i].month:
+            ld = numberOfDays(df2['Date'][i].year, df2['Date'][i].month)
             da['Name'].append(df2['Name'][i])
             da['Date'].append(df2['Date'][i])
             da['First Shift'].append(df2['First Shift'][i])
@@ -396,9 +455,9 @@ def us2(idf):
             da['Time for First Shift'].append(df2['Time for First Shift'][i])
             da['Second Shift'].append(df2['Second Shift'][i])
             da['Time for Second Shift'].append(df2['Time for Second Shift'][i])
-            #print(df2['Date'][i].day+1,ld+1)
-            for j in range(df2['Date'][i].day+1,ld+1):
-                dd=datetime.date(df2['Date'][i].year,df2['Date'][i].month,j)
+            # print(df2['Date'][i].day+1,ld+1)
+            for j in range(df2['Date'][i].day + 1, ld + 1):
+                dd = datetime.date(df2['Date'][i].year, df2['Date'][i].month, j)
 
                 da['Date'].append(dd)
                 da['Name'].append(df2['Name'][i])
@@ -407,8 +466,8 @@ def us2(idf):
                 da['Time for First Shift'].append(np.nan)
                 da['Second Shift'].append(False)
                 da['Time for Second Shift'].append(np.nan)
-            for j in range(1,df2['Date'][i+1].day):
-                dd=datetime.date(df2['Date'][i+1].year,df2['Date'][i+1].month,j)
+            for j in range(1, df2['Date'][i + 1].day):
+                dd = datetime.date(df2['Date'][i + 1].year, df2['Date'][i + 1].month, j)
 
                 da['Date'].append(dd)
                 da['Name'].append(df2['Name'][i])
@@ -419,11 +478,11 @@ def us2(idf):
                 da['Time for Second Shift'].append(np.nan)
 
         else:
-            #print(df2['Date'][i+1].day-df2['Date'][i].day)
+            # print(df2['Date'][i+1].day-df2['Date'][i].day)
 
-            if (df2['Date'][i+1].day-df2['Date'][i].day)>1:
-                da2=df2['Date'][i+1].day
-                da1=df2['Date'][i].day
+            if (df2['Date'][i + 1].day - df2['Date'][i].day) > 1:
+                da2 = df2['Date'][i + 1].day
+                da1 = df2['Date'][i].day
                 da['Date'].append(df2['Date'][i])
                 da['School'].append(df2['School'][i])
                 da['Name'].append(df2['Name'][i])
@@ -431,11 +490,11 @@ def us2(idf):
                 da['Time for First Shift'].append(df2['Time for First Shift'][i])
                 da['Second Shift'].append(df2['Second Shift'][i])
                 da['Time for Second Shift'].append(df2['Time for Second Shift'][i])
-                #print(m,"yes")
-                m=m+1
-                for j in range(da1+1,da2):
-                    dd=datetime.date(df2['Date'][i].year,df2['Date'][i].month,j)
-                    #print(dd)
+                # print(m,"yes")
+                m = m + 1
+                for j in range(da1 + 1, da2):
+                    dd = datetime.date(df2['Date'][i].year, df2['Date'][i].month, j)
+                    # print(dd)
                     da['Date'].append(dd)
                     da['Name'].append(df2['Name'][i])
                     da['First Shift'].append(False)
@@ -451,206 +510,253 @@ def us2(idf):
                 da['Time for First Shift'].append(df2['Time for First Shift'][i])
                 da['Second Shift'].append(df2['Second Shift'][i])
                 da['Time for Second Shift'].append(df2['Time for Second Shift'][i])
-    df3=pd.DataFrame(da)
+    df3 = pd.DataFrame(da)
 
-    if jj==1:
+    if jj == 1:
 
-        da['Date'].append(df2['Date'][i+1])
-        da['Name'].append(df2['Name'][i+1])
-        da['First Shift'].append(df2['First Shift'][i+1])
-        da['School'].append(df2['School'][i+1])
-        da['Time for First Shift'].append(df2['Time for First Shift'][i+1])
-        da['Second Shift'].append(df2['Second Shift'][i+1])
-        da['Time for Second Shift'].append(df2['Time for Second Shift'][i+1])
-        ax=da.copy()
+        da['Date'].append(df2['Date'][i + 1])
+        da['Name'].append(df2['Name'][i + 1])
+        da['First Shift'].append(df2['First Shift'][i + 1])
+        da['School'].append(df2['School'][i + 1])
+        da['Time for First Shift'].append(df2['Time for First Shift'][i + 1])
+        da['Second Shift'].append(df2['Second Shift'][i + 1])
+        da['Time for Second Shift'].append(df2['Time for Second Shift'][i + 1])
+        ax = da.copy()
         ax.pop('Time for Second Shift')
         ax.pop('Time for First Shift')
-        df3=pd.DataFrame(da)
-        #print(dx)
+        df3 = pd.DataFrame(da)
 
-        def deal(mns,mni,idf,yr,df3):
-            p=0
-            ab=0
-            for i in range(0,len(df3['Date'])):
-                da=df3['Date'][i]
-                if da.year==yr:
-                    if da.month==mni:
-                        if df3['First Shift'][i]==True:
-                            p=p+1
+        # print(dx)
+
+        def deal(mns, mni, idf, yr, df3):
+            p = 0
+            fsp = 0
+            fsa = 0
+            ssp = 0
+            ssa = 0
+            bsp = 0
+            bsa = 0
+            ab = 0
+            for i in range(0, len(df3['Date'])):
+                da = df3['Date'][i]
+                if da.year == yr:
+                    if da.month == mni:
+                        if df3['First Shift'][i] == True:
+                            p = p + 1
                         else:
-                            ab=ab+1
-                        if df3['Second Shift'][i]==True:
-                            p=p+1
+                            ab = ab + 1
+                        if df3['Second Shift'][i] == True:
+                            p = p + 1
                         else:
-                            ab=ab+1
-            if (p+ab)!=0:
-                x=datetime.datetime.now()
-                x=x.date()
-                dic={"Present":p,"Absent":ab,"Total":(p+ab),"Last_Updated_Time":datetime.datetime.strftime(x,"%Y-%m-%d")}
+                            ab = ab + 1
 
-                db.collection("DeleteCollection").document(idf).collection("Years").document(str(yr)).collection("Months").document(mns).update(dic)
-            return p,ab
+                        if df3['First Shift'][i] == True and df3['Second Shift'][i] == True:
+                            bsp = bsp + 1
+                        elif df3['First Shift'][i] == True and df3['Second Shift'][i] == False:
+                            fsp = fsp + 1
+                            ssa = ssa + 1
+                        elif df3['First Shift'][i] == False and df3['Second Shift'][i] == True:
+                            fsa = fsa + 1
+                            ssp = ssp + 1
+                        elif df3['First Shift'][i] == False and df3['Second Shift'][i] == False:
+                            bsa = bsa + 1
+            if (p + ab) != 0:
+                x = datetime.datetime.now()
+                x = x.date()
 
-        mni=['1','2','3','4','5','6','7','8','9','10','11','12']
-        yr=['2021','2022']
-        mns=["January","February","March","April","May","June","July","Augest","September","October","November","December"]
+                db.collection("DeleteCollection").document(idf).collection("Years").document(str(j)).collection("Months").document(mns)\
+                    .update({"Present": p, "Absent": ab, "Total": (p + ab),
+                                                    "Last_Updated_Date": datetime.datetime.strftime(x, "%Y-%m-%d"),
+                                                    db.field_path("Present Both Shifts"): bsp,
+                                                    db.field_path("Present First Shift only"): fsp,
+                                                    db.field_path("Present Second Shift Only"): ssp,
+                                                    db.field_path("Absent Both Shift"): int(bsa),
+                                                    db.field_path("Absent First Shift Only"): fsa,
+                                                    db.field_path("Absent Second Shift Only"): ssa})
+            return p, ab, bsp, fsp, ssp, bsa, fsa, ssa
 
+        mni = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        yr = ['2021', '2022']
+        mns = ["January", "February", "March", "April", "May", "June", "July", "Augest", "September", "October",
+               "November", "December"]
         for j in yr:
-            pp=0
-            aab=0
-            for i in range(0,len(mns)):
-                p,ab=deal(mns[i],int(mni[i]),idf,int(j),df3)
-                pp=pp+p
-                aab=aab+ab
+            pp = 0
+            aab = 0
+            bbsp = 0
+            ffsp = 0
+            sssp = 0
+            bbsa = 0
+            ffsa = 0
+            sssa = 0
+            for i in range(0, len(mns)):
+                p, ab, bsp, fsp, ssp, bsa, fsa, ssa = deal(mns[i], int(mni[i]), idf, int(j), df3)
+                pp = pp + p
+                aab = aab + ab
+                bbsp = bbsp + bsp
+                ffsp = ffsp + fsp
+                sssp = sssp + ssp
+                bbsa = bbsa + bsa
+                ffsa = ffsa + fsa
+                sssa = sssa + ssa
+            x = datetime.datetime.now()
+            x = x.date()
 
-            x=datetime.datetime.now()
-            x=x.date()
-            dic={"Present":p,"Absent":ab,"Total":(p+ab),"Last_Updated_Time":datetime.datetime.strftime(x,"%Y-%m-%d")}
-            db.collection("DeleteCollection").document(idf).collection("Years").document(j).update(dic)
+            db.collection("DeleteCollection").document(idf).collection("Years").document(str(j))\
+                .update({"Present": pp, "Absent": aab, "Total": (pp + aab),
+                                                "Last_Updated_Date": datetime.datetime.strftime(x, "%Y-%m-%d"),
+                                                db.field_path("Present Both Shifts"): bbsp,
+                                                db.field_path("Present First Shift only"): ffsp,
+                                                db.field_path("Present Second Shift Only"): sssp,
+                                                db.field_path("Absent Both Shift"): int(bbsa),
+                                                db.field_path("Absent First Shift Only"): ffsa,
+                                                db.field_path("Absent Second Shift Only"): sssa})
 
-        p,to=per(df3)
-        #print(p,ab)
-        ddf={'Present':p,'Absent':(to-p),'Total':to}
+        p, to = per(df3)
+        # print(p,ab)
+        ddf = {'Present': p, 'Absent': (to - p), 'Total': to}
         db.collection("DeleteCollection").document(idf).update(ddf)
         print(ddf)
 
         for i in range(len(ax['Date'])):
-            abx=ax['Date'][i]
-            ax['Date'][i]=datetime.datetime.strftime(abx,"%Y-%m-%d")
-            #print(i)
+            abx = ax['Date'][i]
+            ax['Date'][i] = datetime.datetime.strftime(abx, "%Y-%m-%d")
+            # print(i)
         return da
 
 
-#print(doc.to_dict())
-docs=db.collection('DeleteCollection').get()
-j=0
-ap={}
-bb=[]
+# print(doc.to_dict())
+docs = db.collection('DeleteCollection').get()
+j = 0
+ap = {}
+bb = []
 for i in docs:
     bb.append(i.id)
-xy=us2(bb[0])
-pp=pd.DataFrame(xy)
+xy = us2(bb[0])
+pp = pd.DataFrame(xy)
 
-for i in range(1,len(bb)):
-    j=j+1
+for i in range(1, len(bb)):
+    j = j + 1
 
-    xy=us2(bb[i])
-    xy=pd.DataFrame(xy)
-    frame=[pp,xy]
-    pp=pd.concat(frame)
+    xy = us2(bb[i])
+    xy = pd.DataFrame(xy)
+    frame = [pp, xy]
+    pp = pd.concat(frame)
 
-pp=pp.reset_index(drop=True)
-frame=[pp,p]
-final=pd.concat(frame)
-final=final.reset_index(drop=True)
-#print(final.to_string())
+pp = pp.reset_index(drop=True)
+frame = [pp, p]
+final = pd.concat(frame)
+final = final.reset_index(drop=True)
 
 
-def detail(de,mn,yr,iij):
-    p=0
-    ab=0
-    for i in range(0,len(final['School'])):
-        if final['School'][i]==iij:
-            if final['Date'][i]==de:
-                if final['First Shift'][i]==True:
-                    p=p+1
+# print(final.to_string())
+
+
+def detail(de, mn, yr, iij):
+    p = 0
+    ab = 0
+    for i in range(0, len(final['School'])):
+        if final['School'][i] == iij:
+            if final['Date'][i] == de:
+                if final['First Shift'][i] == True:
+                    p = p + 1
                 else:
-                    ab=ab+1
-                if final['Second Shift'][i]==True:
-                    p=p+1
+                    ab = ab + 1
+                if final['Second Shift'][i] == True:
+                    p = p + 1
                 else:
-                    ab=ab+1
-    #print(de,p,ab)
-    if (ab+p)!=0:
-        print("Day",de)
+                    ab = ab + 1
+    # print(de,p,ab)
+    if (ab + p) != 0:
+        '''print("Day",de)
         print("School",iij)
         print("Present",p)
         print("Absent",ab)
         print("Total",p+ab)
-        print()
-        dic={"Present":p,"Absent":ab,"Total":p+ab}
-        #print(dic)
-        db.collection("Department").document(iij).collection("Years").document(yr).collection("Months").document(mn).collection("Days").document(de).set(dic)
-    return p,ab
+        print()'''
+        dic = {"Present": p, "Absent": ab, "Total": p + ab}
+        # print(dic)
+        db.collection("Department").document(iij).collection("Years").document(yr).collection("Months").document(
+            mn).collection("Days").document(de).set(dic)
+    return p, ab
 
 
-
-yr=["2021"]
-mni=["12"]
-mns=["December"]
-dy=[]
-for i in range(1,32):
+yr = ["2021"]
+mni = ["12"]
+mns = ["December"]
+dy = []
+for i in range(1, 32):
     dy.append(i)
-sch=['SCOPE','SENSE','VSL','VISH','OTHERS']
+sch = ['SCOPE', 'SENSE', 'VSL', 'VISH', 'OTHERS']
 
 for iij in sch:
     for i in yr:
-        for j in range(0,len(mni)):
-            pp=0
-            aab=0
+        for j in range(0, len(mni)):
+            pp = 0
+            aab = 0
             for k in dy:
-                if numberOfDays(int(i),int(mni[j]))<k:
+                if numberOfDays(int(i), int(mni[j])) < k:
                     break
                 else:
-                    #print("1")
-                    if k<10:
-                        de=str(i)+"-"+str(mni[j])+"-"+"0"+str(k)
+                    # print("1")
+                    if k < 10:
+                        de = str(i) + "-" + str(mni[j]) + "-" + "0" + str(k)
                     else:
-                        de=str(i)+"-"+str(mni[j])+"-"+str(k)
+                        de = str(i) + "-" + str(mni[j]) + "-" + str(k)
 
-                    p,ab=detail(de,str(mns[j]),str(i),iij)
-                    pp=pp+p
-                    aab=aab+ab
-            if (aab+pp)!=0:
-
-                print("Month",mns[j])
+                    p, ab = detail(de, str(mns[j]), str(i), iij)
+                    pp = pp + p
+                    aab = aab + ab
+            if (aab + pp) != 0:
+                '''print("Month",mns[j])
                 print("School",iij)
                 print("Present",pp)
                 print("Absent",aab)
                 print("Total",pp+aab)
-                print()
-                dic={'Present':pp,'Absent':aab,'Total':pp+aab}
-                print()
-                db.collection("Department").document(iij).collection("Years").document(i).collection("Months").document(mns[j]).set(dic)
+                print()'''
+                dic = {'Present': pp, 'Absent': aab, 'Total': pp + aab}
+                '''print()'''
+                db.collection("Department").document(iij).collection("Years").document(i).collection("Months").document(
+                    mns[j]).set(dic)
 
-yr=["2022"]
-mni=["1","2","3","4","5","6","7","8","9","10","11","12"]
-mns=["January","February","March","April","May","June","July","Augest","September","October","November","December"]
-dy=[]
-for i in range(1,32):
+yr = ["2022"]
+mni = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
+mns = ["January", "February", "March", "April", "May", "June", "July", "Augest", "September", "October", "November",
+       "December"]
+dy = []
+for i in range(1, 32):
     dy.append(i)
-now=datetime.datetime.now()
-sch=['SCOPE','SENSE','VSL','VISH','OTHERS']
+now = datetime.datetime.now()
+sch = ['SCOPE', 'SENSE', 'VSL', 'VISH', 'OTHERS']
 
 for iij in sch:
     for i in yr:
-        for j in range(0,now.month+1):
-            pp=0
-            aab=0
+        for j in range(0, now.month + 1):
+            pp = 0
+            aab = 0
             for k in dy:
-                if numberOfDays(int(i),int(mni[j]))<k:
+                if numberOfDays(int(i), int(mni[j])) < k:
                     break
                 else:
-                    if k<10:
-                        if j<10:
-                            de=str(i)+"-0"+str(mni[j])+"-"+"0"+str(k)
+                    if k < 10:
+                        if j < 10:
+                            de = str(i) + "-0" + str(mni[j]) + "-" + "0" + str(k)
                         else:
-                            de=str(i)+"-"+str(mni[j])+"-0"+str(k)
+                            de = str(i) + "-" + str(mni[j]) + "-0" + str(k)
                     else:
-                        if j<10:
-                            de=str(i)+"-0"+str(mni[j])+"-"+str(k)
+                        if j < 10:
+                            de = str(i) + "-0" + str(mni[j]) + "-" + str(k)
                         else:
-                            de=str(i)+"-"+str(mni[j])+"-"+str(k)
-                    p,ab=detail(de,str(mns[j]),str(i),iij)
-                    pp=pp+p
-                    aab=aab+ab
-            if (pp+aab)!=0:
-                print("Month",mns[j])
+                            de = str(i) + "-" + str(mni[j]) + "-" + str(k)
+                    p, ab = detail(de, str(mns[j]), str(i), iij)
+                    pp = pp + p
+                    aab = aab + ab
+            if (pp + aab) != 0:
+                '''print("Month",mns[j])
                 print("School",iij)
                 print("Present",pp)
                 print("Absent",aab)
-                print("Total",pp+aab)
-                dic={'Present':pp,'Absent':aab,'Total':pp+aab}
-                db.collection("Department").document(iij).collection("Years").document(i).collection("Months").document(mns[j]).set(dic)
+                print("Total",pp+aab)'''
+                dic = {'Present': pp, 'Absent': aab, 'Total': pp + aab}
+                db.collection("Department").document(iij).collection("Years").document(i).collection("Months").document(
+                    mns[j]).set(dic)
                 print()
-
